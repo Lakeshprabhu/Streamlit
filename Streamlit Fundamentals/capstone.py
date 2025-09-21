@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 URL = "https://raw.githubusercontent.com/marcopeix/MachineLearningModelDeploymentwithStreamlit/master/12_dashboard_capstone/data/quarterly_canada_population.csv"
-
-df = pd.read_csv(URL, dtype={'Quarter': str,
+def read_data():
+    df = pd.read_csv(URL, dtype={'Quarter': str,
                              'Canada': np.int32,
                              'Newfoundland and Labrador': np.int32,
                              'Prince Edward Island': np.int32,
@@ -21,35 +21,8 @@ df = pd.read_csv(URL, dtype={'Quarter': str,
                              'Northwest Territories': np.int32,
                              'Nunavut': np.int32})
 
-st.title("Population of Canada")
-st.markdown("Source table can be found [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901)")
 
-with st.expander("See full data table"):
-    st.write(df)
-
-with st.form("population-form"):
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.write("Choose a starting date")
-        start_quarter = st.selectbox("Quarter", options=["Q1", "Q2", "Q3", "Q4"], index=2, key="start_q")
-        start_year = st.slider("Year", min_value=1991, max_value=2023, value=1991, step=1, key="start_y")
-
-    with col2:
-        st.write("Choose an end date")
-        end_quarter = st.selectbox("Quarter", options=["Q1", "Q2", "Q3", "Q4"], index=0, key="end_q")
-        end_year = st.slider("Year", min_value=1991, max_value=2023, value=2023, step=1, key="end_y")
-
-    with col3:
-        st.write("Choose a location")
-        target = st.selectbox("Choose a location", options=df.columns[1:], index=0)
-
-    submit_btn = st.form_submit_button("Analyze", type="primary")
-
-start_date = f"{start_quarter} {start_year}"
-end_date = f"{end_quarter} {end_year}"
-
-
+@st.cache_data
 def format_date_for_comparison(date: str) -> float:
     """Convert 'QX YYYY' into numeric year + fraction of quarter"""
     quarter, year = date.split()
@@ -58,7 +31,7 @@ def format_date_for_comparison(date: str) -> float:
 
     return year + (q_num - 1) * 0.25
 
-
+@st.cache_data
 def end_before_start(start_date, end_date):
     return format_date_for_comparison(start_date) > format_date_for_comparison(end_date)
 
@@ -108,10 +81,49 @@ def display_dashboard(start_date, end_date, target):
         st.pyplot(fig)
 
 
-if submit_btn:
-    if start_date not in df['Quarter'].tolist() or end_date not in df['Quarter'].tolist():
-        st.error("No data available. Check your quarter and year selection")
-    elif end_before_start(start_date, end_date):
-        st.error("Dates don't work. Start date must come before end date.")
-    else:
-        display_dashboard(start_date, end_date, target)
+
+
+
+if __name__=='__main__':
+    df = read_data()
+    st.title("Population of Canada")
+    st.markdown("Source table can be found [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901)")
+
+    with st.expander("See full data table"):
+        st.write(df)
+
+    st.title("Population of Canada")
+    st.markdown("Source table can be found [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901)")
+
+    with st.expander("See full data table"):
+        st.write(df)
+
+    with st.form("population-form"):
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.write("Choose a starting date")
+            start_quarter = st.selectbox("Quarter", options=["Q1", "Q2", "Q3", "Q4"], index=2, key="start_q")
+            start_year = st.slider("Year", min_value=1991, max_value=2023, value=1991, step=1, key="start_y")
+
+        with col2:
+            st.write("Choose an end date")
+            end_quarter = st.selectbox("Quarter", options=["Q1", "Q2", "Q3", "Q4"], index=0, key="end_q")
+            end_year = st.slider("Year", min_value=1991, max_value=2023, value=2023, step=1, key="end_y")
+
+        with col3:
+            st.write("Choose a location")
+            target = st.selectbox("Choose a location", options=df.columns[1:], index=0)
+
+        submit_btn = st.form_submit_button("Analyze", type="primary")
+
+    start_date = f"{start_quarter} {start_year}"
+    end_date = f"{end_quarter} {end_year}"
+
+    if submit_btn:
+        if start_date not in df['Quarter'].tolist() or end_date not in df['Quarter'].tolist():
+            st.error("No data available. Check your quarter and year selection")
+        elif end_before_start(start_date, end_date):
+            st.error("Dates don't work. Start date must come before end date.")
+        else:
+            display_dashboard(start_date, end_date, target)
