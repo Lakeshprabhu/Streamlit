@@ -48,6 +48,15 @@ def train_model(data):
 
     return model
 
+@st.cache_resource(show_spinner="Predicting....")
+def predict_model(_mo,_xencode,y_goal):
+    features = [e[0] for e in y_goal]
+    features = np.array(features).reshape(-1,1)
+    encoded_features = _xencode.transform(_xencode)
+    pred = _mo.predict(encoded_features)
+
+    return pred[0]
+
 
 
 if __name__ == "__main__":
@@ -83,4 +92,15 @@ if __name__ == "__main__":
 
     st.subheader('Step 2 : Prediction')
 
-    st.button("Predict",type='primary')
+    po = st.button("Predict",type='primary')
+
+    if po:
+        le = lb_encoding(df)
+        o = or_encoding(df)
+        perf = perform_encoding(df,le,o)
+
+
+
+
+    y_goal = [odor,stalk_surface_above_ring,stalk_surface_below_ring,gill_size,stalk_color_above_ring,stalk_color_below_ring,ring_type,
+              gill_color,spore_print_color]
