@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from sklearn.ensemble import GradientBoostingClassifier
 
-URL = "https://raw.githubusercontent.com/marcopeix/MachineLearningModelDeploymentwithStreamlit/master/17_caching_capstone/data/mushrooms.csv"
+URL = "https://raw.githubusercontent.com/marcopeix/MachineLearningModelDeploymentwithStreamlit/refs/heads/master/18_caching_capstone/data/mushrooms.csv"
 COLS = ['class', 'odor', 'gill-size', 'gill-color', 'stalk-surface-above-ring',
        'stalk-surface-below-ring', 'stalk-color-above-ring',
        'stalk-color-below-ring', 'ring-type', 'spore-print-color']
@@ -26,15 +26,18 @@ def lb_encoding(data):
 
 @st.cache_resource
 def or_encoding(data):
-    o = OrdinalEncoder()
-    o = o.fit(data.columns[1:])
-    return o
+    oe = OrdinalEncoder()
+    X_cols = data.columns[1:]
+
+    oe.fit(data[X_cols])
+
+    return oe
 
 @st.cache_resource(show_spinner="encoding data....")
 def perform_encoding(data,_xencode,_yencode):
     data['class'] = _xencode.transform(data['class'])
     x_cols = data.columns[1:]
-    data[x_cols] = _yencode.transform(data['x_cols'])
+    data[x_cols] = _yencode.transform(data[x_cols])
 
     return data
 
@@ -49,11 +52,12 @@ def train_model(data):
     return model
 
 @st.cache_resource(show_spinner="Predicting....")
-def predict_model(_mo,_xencode,y_goal):
-    features = [e[0] for e in y_goal]
-    features = np.array(features).reshape(-1,1)
-    encoded_features = _xencode.transform(_xencode)
-    pred = _mo.predict(encoded_features)
+def predict_model(_model,_X_encoder,X_pred):
+    features = [each[0] for each in X_pred]
+    features = np.array(features).reshape(1,-1)
+    encoded_features = _X_encoder.transform(features)
+
+    pred = _model.predict(encoded_features)
 
     return pred[0]
 
@@ -97,16 +101,22 @@ if __name__ == "__main__":
     po = st.button("Predict",type='primary')
 
     if po:
-        y_goal = [odor, stalk_surface_above_ring, stalk_surface_below_ring, gill_size, stalk_color_above_ring,
-                  stalk_color_below_ring, ring_type,
-                  gill_color, spore_print_color]
+        y_goal = [odor,
+                  gill_size,
+                  gill_color,
+                  stalk_surface_above_ring,
+                  stalk_surface_below_ring,
+                  stalk_color_above_ring,
+                  stalk_color_below_ring,
+                  ring_type,
+                  spore_print_color]
         le = lb_encoding(df)
         o = or_encoding(df)
-        perf = perform_encoding(df,le,o)
+        perf = perform_encoding(df,o,le)
         mo = train_model(perf)
-        pred = predict_model(mo,le,y_goal)
+        pred = predict_model(mo,o,y_goal)
 
-        if pred[0] == "1":
+        if pred == 0:
             st.write("Edible")
 
         else:
