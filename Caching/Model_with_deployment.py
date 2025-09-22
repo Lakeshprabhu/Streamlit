@@ -52,7 +52,7 @@ def train_model(data):
 
 if __name__ == "__main__":
 
-    df =
+    df = read_csv(URL,COLS)
     st.title("Mushroom Classifier")
 
     col1,col2,col3 = st.columns(3)
