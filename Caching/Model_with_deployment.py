@@ -61,7 +61,9 @@ def predict_model(_mo,_xencode,y_goal):
 
 if __name__ == "__main__":
 
+
     df = read_csv(URL,COLS)
+
     st.title("Mushroom Classifier")
 
     col1,col2,col3 = st.columns(3)
@@ -95,12 +97,21 @@ if __name__ == "__main__":
     po = st.button("Predict",type='primary')
 
     if po:
+        y_goal = [odor, stalk_surface_above_ring, stalk_surface_below_ring, gill_size, stalk_color_above_ring,
+                  stalk_color_below_ring, ring_type,
+                  gill_color, spore_print_color]
         le = lb_encoding(df)
         o = or_encoding(df)
         perf = perform_encoding(df,le,o)
+        mo = train_model(perf)
+        pred = predict_model(mo,le,y_goal)
+
+        if pred[0] == "1":
+            st.write("Edible")
+
+        else:
+            st.write("Poisoinous")
 
 
 
 
-    y_goal = [odor,stalk_surface_above_ring,stalk_surface_below_ring,gill_size,stalk_color_above_ring,stalk_color_below_ring,ring_type,
-              gill_color,spore_print_color]
