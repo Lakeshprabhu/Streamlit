@@ -10,11 +10,49 @@ COLS = ['class', 'odor', 'gill-size', 'gill-color', 'stalk-surface-above-ring',
        'stalk-color-below-ring', 'ring-type', 'spore-print-color']
 
 
+@st.cache_data
+def read_csv(url,cols):
+    df = pd.read_csv(url)
+    df = df[cols]
 
+    return df
+
+
+@st.cache_resource
+def lb_encoding(data):
+    le =LabelEncoder()
+    le = le.fit(data['class'])
+    return le
+
+@st.cache_resource
+def or_encoding(data):
+    o = OrdinalEncoder()
+    o = o.fit(data.columns[1:])
+    return o
+
+@st.cache_resource(show_spinner="encoding data....")
+def perform_encoding(data,_xencode,_yencode):
+    data['class'] = _xencode.transform(data['class'])
+    x_cols = data.columns[1:]
+    data[x_cols] = _yencode.transform(data['x_cols'])
+
+    return data
+
+@st.cache_resource(show_spinner='Training model ...')
+def train_model(data):
+    X = data.drop(['class'],axis=1)
+    y = data['class']
+
+    model = GradientBoostingClassifier(max_depth = 5 , random_state = 42)
+    model = model.fit(X,y)
+
+    return model
 
 
 
 if __name__ == "__main__":
+
+    df =
     st.title("Mushroom Classifier")
 
     col1,col2,col3 = st.columns(3)
