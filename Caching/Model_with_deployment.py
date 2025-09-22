@@ -110,7 +110,7 @@ if __name__ == "__main__":
             st.write("Edible")
 
         else:
-            st.write("Poisoinous")
+            st.write("Poisonious")
 
 
 
